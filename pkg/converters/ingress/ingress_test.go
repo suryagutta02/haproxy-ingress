@@ -289,7 +289,7 @@ func TestSyncDrainSupport(t *testing.T) {
 	pod2 := c.createPod1("default/echo-yyyyy", "172.17.1.104", "none:8080")
 	c.cache.TermPodList[svcName] = []*api.Pod{pod1, pod2}
 
-	c.cache.Changed.GlobalNew = map[string]string{"drain-support": "true"}
+	c.cache.Changed.GlobalConfigMapDataNew = map[string]string{"drain-support": "true"}
 	c.Sync(
 		c.createIng1("default/echo", "echo.example.com", "/", "echo:8080"),
 	)
@@ -1406,7 +1406,7 @@ WARN using default certificate due to an error reading secret 'default/tls1' on 
 		secs(&c.cache.Changed.SecretsAdd, test.secAdd)
 		secs(&c.cache.Changed.SecretsUpd, test.secUpd)
 		secs(&c.cache.Changed.SecretsDel, test.secDel)
-		endp(&c.cache.Changed.Endpoints, test.endpoints)
+		endp(&c.cache.Changed.EndpointsNew, test.endpoints)
 		c.Sync()
 
 		if test.expFront == "" {
@@ -1435,7 +1435,7 @@ func TestSyncPartialDefaultBackend(t *testing.T) {
 
 	// the mock of the default backend is hardcoded to system/default:8080 at 172.17.0.99
 	_, ep := conv_helper.CreateService("system/default", "8080", "172.17.0.90")
-	c.cache.Changed.Endpoints = []*api.Endpoints{ep}
+	c.cache.Changed.EndpointsNew = []*api.Endpoints{ep}
 	c.Sync()
 
 	c.compareConfigFront(`[]`)
@@ -1840,7 +1840,7 @@ func TestSyncAnnFrontDefault(t *testing.T) {
 	defer c.teardown()
 
 	c.createSvc1Auto()
-	c.cache.Changed.GlobalNew = map[string]string{"timeout-client": "1s"}
+	c.cache.Changed.GlobalConfigMapDataNew = map[string]string{"timeout-client": "1s"}
 	c.Sync(
 		c.createIng1Ann("default/echo1", "echo1.example.com", "/app", "echo:8080", map[string]string{
 			"ingress.kubernetes.io/timeout-client": "2s",
@@ -1961,7 +1961,7 @@ func TestSyncAnnBackDefault(t *testing.T) {
 	c.createSvc1Ann("default/echo7", "8080", "172.17.0.17", map[string]string{
 		"ingress.kubernetes.io/balance-algorithm": "roundrobin",
 	})
-	c.cache.Changed.GlobalNew = map[string]string{"balance-algorithm": "roundrobin"}
+	c.cache.Changed.GlobalConfigMapDataNew = map[string]string{"balance-algorithm": "roundrobin"}
 	c.Sync(
 		c.createIng1Ann("default/echo1", "echo.example.com", "/app1", "echo1:8080", map[string]string{
 			"ingress.kubernetes.io/balance-algorithm": "leastconn",
@@ -2189,9 +2189,9 @@ func (c *testConfig) Sync(ing ...*networking.Ingress) {
 	if ing != nil {
 		c.cache.IngList = ing
 	}
-	if c.cache.Changed.GlobalCur == nil && c.cache.Changed.GlobalNew == nil {
+	if c.cache.Changed.GlobalConfigMapDataCur == nil && c.cache.Changed.GlobalConfigMapDataNew == nil {
 		// first run, set GlobalNew != nil and run SyncFull
-		c.cache.Changed.GlobalNew = map[string]string{}
+		c.cache.Changed.GlobalConfigMapDataNew = map[string]string{}
 	}
 	c.cache.SecretTLSPath["system/default"] = "/tls/tls-default.pem"
 	conv := c.createConverter()
