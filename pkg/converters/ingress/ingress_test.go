@@ -2206,7 +2206,7 @@ func (c *testConfig) createConverter() *converter {
 		}
 	}
 	return NewIngressConverter(
-		&ingtypes.ConverterOptions{
+		&convtypes.ConverterOptions{
 			Cache:            c.cache,
 			Logger:           c.logger,
 			Tracker:          c.tracker,
