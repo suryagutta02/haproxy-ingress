@@ -17,6 +17,7 @@ limitations under the License.
 package ingress
 
 import (
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -645,6 +646,7 @@ func TestSyncIngressClass(t *testing.T) {
 	for _, test := range testCases {
 		c := setup(t)
 		c.cache.ConfigMapList = map[string]*api.ConfigMap{"ingress-controller/config": {}}
+		c.cache.SecretTLSPath["system/default"] = "/tls/tls-default.pem"
 		conv := c.createConverter()
 		ingClass := networking.IngressClass{
 			ObjectMeta: metav1.ObjectMeta{
@@ -2196,7 +2198,8 @@ func (c *testConfig) Sync(ing ...*networking.Ingress) {
 	c.cache.SecretTLSPath["system/default"] = "/tls/tls-default.pem"
 	conv := c.createConverter()
 	conv.updater = c.updater
-	conv.Sync()
+	full := !reflect.DeepEqual(c.cache.Changed.GlobalConfigMapDataCur, c.cache.Changed.GlobalConfigMapDataNew)
+	conv.Sync(full)
 }
 
 func (c *testConfig) createConverter() *converter {
@@ -2216,6 +2219,7 @@ func (c *testConfig) createConverter() *converter {
 			AnnotationPrefix: "ingress.kubernetes.io",
 		},
 		c.hconfig,
+		c.cache.SwapChangedObjects(),
 	).(*converter)
 }
 
