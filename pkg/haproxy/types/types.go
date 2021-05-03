@@ -371,6 +371,8 @@ type FrontendMaps struct {
 	TLSNeedCrtList        *HostsMap
 	TLSInvalidCrtPagesMap *HostsMap
 	TLSMissingCrtPagesMap *HostsMap
+	//
+	DefaultHostMap *HostsMap
 }
 
 // AuthProxy ...
@@ -555,9 +557,10 @@ type Backend struct {
 	//
 	// Paths
 	//
-	Paths      []*BackendPath
-	PathsMap   *HostsMap
-	pathConfig map[string]*BackendPathConfig
+	Paths               []*BackendPath
+	PathsMap            *HostsMap
+	PathsDefaultHostMap *HostsMap
+	pathConfig          map[string]*BackendPathConfig
 	//
 	// per backend config
 	//
